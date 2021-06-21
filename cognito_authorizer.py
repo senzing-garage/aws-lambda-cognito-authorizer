@@ -141,6 +141,9 @@ def get_exception():
 # -----------------------------------------------------------------------------
 
 def verify_token(token):
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
     # get the kid from the headers prior to verification
     headers = jwt.get_unverified_headers(token)
     kid = headers['kid']
@@ -151,7 +154,7 @@ def verify_token(token):
             key_index = i
             break
     if key_index == -1:
-        print('Public key not found in jwks.json')
+        logger.info(message_warning(100, "Public key not found in jwks.json")
         return False
     # construct the public key
     public_key = jwk.construct(keys[key_index])
@@ -162,22 +165,21 @@ def verify_token(token):
     decoded_signature = base64url_decode(encoded_signature.encode('utf-8'))
     # verify the signature
     if not public_key.verify(message.encode("utf8"), decoded_signature):
-        print('Signature verification failed')
+        logger.info(message_warning(100, "Signature verification failed"))
         return False
-    print('Signature successfully verified')
+    logger.info(message_info(100, "Signature successfully verified"))
     # since we passed the verification, we can now safely
     # use the unverified claims
     claims = jwt.get_unverified_claims(token)
     # additionally we can verify the token expiration
     if time.time() > claims['exp']:
-        print('Token is expired')
+        logger.info(message_warning(100, "Token is expired"))
         return False
     # and the Audience  (use claims['client_id'] if verifying an access token)
     if claims['client_id'] != app_client_id:
-        print('Token was not issued for this audience')
+        logger.info(message_warning(100, "Token was not issued for this audience"))
         return False
     # now we can use the claims
-    print(claims)
     return claims
 
 def generateAuthPolicy(principalId, resource, effect):
@@ -210,15 +212,15 @@ def handler(event, context):
     response = {}
 
     try:
-        lprint("Method ARN: " + event['methodArn'])
+        logger.info(message_info(101, json.dumps(event)))
         headers = event['headers']
         principalId = "user"
         if verify_token(headers["token"]):
-            print("policy is allowed")
-            return generateAuthPolicy(principalId, event['methodArn'], "Allow")
+            logger.info(message_info(100, "policy is allowed"))
+            response = generateAuthPolicy(principalId, event['methodArn'], "Allow")
         else:
-            print("policy is not allowed")
-            return "Unauthorized"
+            logger.info(message_warning(100, "policy is not allowed"))
+            response = "Unauthorized"
 
     except Exception as e:
         logger.error(message_error(997, e))
