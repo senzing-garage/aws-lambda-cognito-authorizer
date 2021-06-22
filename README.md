@@ -70,7 +70,7 @@ These are "one-time tasks" which may already have been completed.
 ### Download
 
 1. Get a local copy of
-   [template-python.py](template-python.py).
+   [cognito_authorizer.py](cognito_authorizer.py).
    Example:
 
     1. :pencil2: Specify where to download file.
@@ -227,6 +227,14 @@ logging into AWS Elastic Container Registry (ECR) is required.
     chmod +x ~/aws-lambda-rie/aws-lambda-rie
     ```
 
+1. Set the required environment variables
+
+    ```console
+    export USERPOOL_ID=<insert user pool id>
+    export APP_CLIENT_ID=<insert app client id>
+    export AWS_REGION=<insert aws region e.g. us-east-1>
+    ```
+
 1. Run docker container to start a service.
    Example:
 
@@ -237,8 +245,11 @@ logging into AWS Elastic Container Registry (ECR) is required.
       --publish 9001:8080 \
       --rm \
       --tty \
+      --env USERPOOL_ID=${USERPOOL_ID} \
+      --env APP_CLIENT_ID=${APP_CLIENT_ID} \
+      --env AWS_REGION=${AWS_REGION} \
       --volume ~/aws-lambda-rie:/aws-lambda \
-      senzing/self-signed-certificate \
+      senzing/cognito-authorizer \
         /var/lang/bin/python -m awslambdaric cognito_authorizer.handler
     ```
 

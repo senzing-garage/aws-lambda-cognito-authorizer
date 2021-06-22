@@ -1,3 +1,4 @@
 cffi
 cfnresponse
 pyOpenSSL
+python-jose

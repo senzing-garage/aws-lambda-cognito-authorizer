@@ -4,7 +4,6 @@
 # cognito_authorizer.py, a custom lambda authorizer for authorizing network traffic with cognito.
 # -----------------------------------------------------------------------------------------------
 
-from OpenSSL import crypto
 import datetime
 from json import JSONEncoder
 import json
@@ -15,7 +14,9 @@ import sys
 import time
 import traceback
 
-import cfnresponse
+import urllib.request
+from jose import jwk, jwt
+from jose.utils import base64url_decode
 
 __all__ = []
 __version__ = "1.0.0"  # See https://www.python.org/dev/peps/pep-0396/
@@ -29,7 +30,7 @@ NINE_YEARS_IN_SECONDS = 9 * ONE_YEAR_IN_SECONDS
 TEN_YEARS_IN_SECONDS = 10 * ONE_YEAR_IN_SECONDS
 
 # -----------------------------------------------------------------------------
-# Logging
+# Logging Variables
 # -----------------------------------------------------------------------------
 
 # Configure logging. See https://docs.python.org/2/library/logging.html#levels
@@ -48,6 +49,10 @@ log_format = '%(asctime)s %(message)s'
 log_level_parameter = os.getenv("SENZING_LOG_LEVEL", "info").lower()
 log_level = log_level_map.get(log_level_parameter, logging.INFO)
 logging.basicConfig(format=log_format, level=log_level)
+
+# set universal logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # -----------------------------------------------------------------------------
 # Message handling
@@ -69,6 +74,7 @@ message_dictionary = {
     "101": "Event: {0}",
     "102": "Context: {0}",
     "103": "Response: {0}",
+    "104": "Info: {0}",
     "300": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}W",
     "700": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}E",
     "900": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}D",
@@ -91,6 +97,10 @@ keys_url = 'https://cognito-idp.{}.amazonaws.com/{}/.well-known/jwks.json'.forma
 with urllib.request.urlopen(keys_url) as f:
     response = f.read()
 keys = json.loads(response.decode('utf-8'))['keys']
+
+# -----------------------------------------------------------------------------
+# logging functions
+# -----------------------------------------------------------------------------
 
 def message(index, *args):
     index_string = str(index)
@@ -141,9 +151,6 @@ def get_exception():
 # -----------------------------------------------------------------------------
 
 def verify_token(token):
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
     # get the kid from the headers prior to verification
     headers = jwt.get_unverified_headers(token)
     kid = headers['kid']
@@ -154,7 +161,7 @@ def verify_token(token):
             key_index = i
             break
     if key_index == -1:
-        logger.info(message_warning(100, "Public key not found in jwks.json")
+        logger.info(message_warning(100, "Public key not found in jwks.json"))
         return False
     # construct the public key
     public_key = jwk.construct(keys[key_index])
@@ -165,19 +172,19 @@ def verify_token(token):
     decoded_signature = base64url_decode(encoded_signature.encode('utf-8'))
     # verify the signature
     if not public_key.verify(message.encode("utf8"), decoded_signature):
-        logger.info(message_warning(100, "Signature verification failed"))
+        logger.info(message_warning(104, "Signature verification failed"))
         return False
-    logger.info(message_info(100, "Signature successfully verified"))
+    logger.info(message_info(104, "Signature successfully verified"))
     # since we passed the verification, we can now safely
     # use the unverified claims
     claims = jwt.get_unverified_claims(token)
     # additionally we can verify the token expiration
     if time.time() > claims['exp']:
-        logger.info(message_warning(100, "Token is expired"))
+        logger.info(message_warning(104, "Token is expired"))
         return False
     # and the Audience  (use claims['client_id'] if verifying an access token)
     if claims['client_id'] != app_client_id:
-        logger.info(message_warning(100, "Token was not issued for this audience"))
+        logger.info(message_warning(104, "Token was not issued for this audience"))
         return False
     # now we can use the claims
     return claims
@@ -202,13 +209,9 @@ def generateAuthPolicy(principalId, resource, effect):
 # -----------------------------------------------------------------------------
 
 
-def handler(event, context):
+def lambda_handler(event, context):
     """ Function to be called by AWS lambda. """
 
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
-    result = cfnresponse.SUCCESS
     response = {}
 
     try:
@@ -216,20 +219,17 @@ def handler(event, context):
         headers = event['headers']
         principalId = "user"
         if verify_token(headers["token"]):
-            logger.info(message_info(100, "policy is allowed"))
+            logger.info(message_info(104, "policy is allowed"))
             response = generateAuthPolicy(principalId, event['methodArn'], "Allow")
         else:
-            logger.info(message_warning(100, "policy is not allowed"))
-            response = "Unauthorized"
+            logger.info(message_warning(104, "policy is not allowed"))
+            response = "unauthorized"
 
     except Exception as e:
         logger.error(message_error(997, e))
         traceback.print_exc()
-        result = cfnresponse.FAILED
     finally:
-        cfnresponse.send(event, context, result, response)
-
-    return response
+        return response
 
 # -----------------------------------------------------------------------------
 # Main
@@ -247,4 +247,4 @@ if __name__ == "__main__":
 
     # Note: This will error because of cfnresponse.send() not having a context "log_stream_name".
 
-    handler(event, context)
+    lambda_handler(event, context)
