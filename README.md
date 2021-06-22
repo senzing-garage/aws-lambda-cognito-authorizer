@@ -15,6 +15,8 @@ AWS Cloudformation.
 1. [Preamble](#preamble)
     1. [Legend](#legend)
 1. [Related artifacts](#related-artifacts)
+1. [Archictecture](#architecture)
+    1. [How to add Cognito Authorizer to a Websocket API gateway](#how-to-add-cognito-authorizer-to-a-websocket-api-gateway)
 1. [Demonstrate using Command Line Interface](#demonstrate-using-command-line-interface)
     1. [Prerequisites for CLI](#prerequisites-for-cli)
     1. [Download](#download)
@@ -55,6 +57,26 @@ describing where we can improve.   Now on with the show...
 ## Related artifacts
 
 1. [https://github.com/Senzing/aws-cloudformation-ecs-poc-simple](https://github.com/Senzing/aws-cloudformation-ecs-poc-simple) AWS Cloudformation
+
+## Archictecture
+
+The following is an architecture showcasing how the websocket API gateway interacts with the aws lambda cognito authorizer
+
+![Archictecture diagram](assets/architecture.png)
+
+### How to add Cognito Authorizer to a Websocket API gateway
+
+Firstly, create a new authorizer and set the Name, Lambda Function and Identity Sources. Set the Lambda Function to the cognito authorizer Lambda Function and Identity Sources to token
+
+![Create Authorizer](assets/create_authorizer.png)
+
+Then in the "routes" tab, click on the $connect route and then on "route request". As seen in the example below, change the authorization to the cognito authorizer lambda function.
+
+![Set route request setting](assets/route_request_setting.png)
+
+The result should look like this and you are good to go.
+
+![Add authorizer to route request](assets/add_authorizer_route_request.png)
 
 ## Demonstrate using Command Line Interface
 
