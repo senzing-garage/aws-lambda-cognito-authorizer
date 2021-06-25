@@ -15,6 +15,8 @@ AWS Cloudformation.
 1. [Preamble](#preamble)
     1. [Legend](#legend)
 1. [Related artifacts](#related-artifacts)
+1. [Architecture](#architecture)
+    1. [How to add Cognito Authorizer to a Websocket API gateway](#how-to-add-cognito-authorizer-to-a-websocket-api-gateway)
 1. [Demonstrate using Command Line Interface](#demonstrate-using-command-line-interface)
     1. [Prerequisites for CLI](#prerequisites-for-cli)
     1. [Download](#download)
@@ -56,6 +58,38 @@ describing where we can improve.   Now on with the show...
 
 1. [https://github.com/Senzing/aws-cloudformation-ecs-poc-simple](https://github.com/Senzing/aws-cloudformation-ecs-poc-simple) AWS Cloudformation
 
+## Architecture
+
+The following is an architecture showcasing how the websocket API gateway interacts with the aws lambda cognito authorizer.
+
+![Architecture diagram](assets/architecture.png)
+
+### How to add Cognito Authorizer to a Websocket API gateway
+
+1. Visit the [AWS Console for API Gateway](https://console.aws.amazon.com/apigateway/main).
+2. On the left hand navigation bar, choose the APIs tab.
+3. Click on a Websocket API Gateway that you want to attach a Cognito Authorizer.
+4. On the bottom left hand navigation bar, choose the Authorizers tab.
+5. Click on the "Create New Authorizer" button.
+6. In the "Create Authorizer" pane:
+    1. Set the Authorizer name.
+    1. Set the Lambda Function to the Cognito Authorizer.
+    1. Set Identity Sources to the request parameters used for authorization. In the example below, we used the request parameter token.
+7. Once done, click on the "create" button.
+
+![Create Authorizer](assets/create_authorizer.png)
+
+8. On the bottom left hand navigation bar, choose the Routes tab.
+9. In the Routes pane, choose the $connect route.
+10. In the $connect pane, click on Route Request.
+11. Change the authorization to the cognito authorizer lambda function.
+
+![Set route request setting](assets/route_request_setting.png)
+
+12. Click on Route Overview and if it looks like the example below, you have successfully added the cognito authorizer to your Websocket API gateway.
+
+![Add authorizer to route request](assets/add_authorizer_route_request.png)
+
 ## Demonstrate using Command Line Interface
 
 ### Prerequisites for CLI
@@ -70,7 +104,7 @@ These are "one-time tasks" which may already have been completed.
 ### Download
 
 1. Get a local copy of
-   [template-python.py](template-python.py).
+   [cognito_authorizer.py](cognito_authorizer.py).
    Example:
 
     1. :pencil2: Specify where to download file.
@@ -227,6 +261,14 @@ logging into AWS Elastic Container Registry (ECR) is required.
     chmod +x ~/aws-lambda-rie/aws-lambda-rie
     ```
 
+1. Set the required environment variables
+
+    ```console
+    export USERPOOL_ID=<insert user pool id>
+    export APP_CLIENT_ID=<insert app client id>
+    export AWS_REGION=<insert aws region e.g. us-east-1>
+    ```
+
 1. Run docker container to start a service.
    Example:
 
@@ -237,8 +279,11 @@ logging into AWS Elastic Container Registry (ECR) is required.
       --publish 9001:8080 \
       --rm \
       --tty \
+      --env USERPOOL_ID=${USERPOOL_ID} \
+      --env APP_CLIENT_ID=${APP_CLIENT_ID} \
+      --env AWS_REGION=${AWS_REGION} \
       --volume ~/aws-lambda-rie:/aws-lambda \
-      senzing/self-signed-certificate \
+      senzing/cognito-authorizer \
         /var/lang/bin/python -m awslambdaric cognito_authorizer.handler
     ```
 

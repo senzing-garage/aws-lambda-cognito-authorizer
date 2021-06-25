@@ -1,10 +1,9 @@
 #! /usr/bin/env python3
 
-# -----------------------------------------------------------------------------
-# cognito_authorizer.py for authorizing network traffic.
-# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+# cognito_authorizer.py, a custom lambda authorizer for authorizing network traffic with cognito.
+# -----------------------------------------------------------------------------------------------
 
-from OpenSSL import crypto
 import datetime
 from json import JSONEncoder
 import json
@@ -15,7 +14,9 @@ import sys
 import time
 import traceback
 
-import cfnresponse
+import urllib.request
+from jose import jwk, jwt
+from jose.utils import base64url_decode
 
 __all__ = []
 __version__ = "1.0.0"  # See https://www.python.org/dev/peps/pep-0396/
@@ -29,7 +30,7 @@ NINE_YEARS_IN_SECONDS = 9 * ONE_YEAR_IN_SECONDS
 TEN_YEARS_IN_SECONDS = 10 * ONE_YEAR_IN_SECONDS
 
 # -----------------------------------------------------------------------------
-# Logging
+# Logging Variables
 # -----------------------------------------------------------------------------
 
 # Configure logging. See https://docs.python.org/2/library/logging.html#levels
@@ -48,6 +49,10 @@ log_format = '%(asctime)s %(message)s'
 log_level_parameter = os.getenv("SENZING_LOG_LEVEL", "info").lower()
 log_level = log_level_map.get(log_level_parameter, logging.INFO)
 logging.basicConfig(format=log_format, level=log_level)
+
+# set universal logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # -----------------------------------------------------------------------------
 # Message handling
@@ -69,6 +74,7 @@ message_dictionary = {
     "101": "Event: {0}",
     "102": "Context: {0}",
     "103": "Response: {0}",
+    "104": "Info: {0}",
     "300": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}W",
     "700": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}E",
     "900": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}D",
@@ -77,6 +83,24 @@ message_dictionary = {
     "999": "{0}",
 }
 
+# -----------------------------------------------------------------------------
+# Authorizer Variables
+# -----------------------------------------------------------------------------
+
+region = os.environ['AWS_REGION']
+userpool_id = os.environ['USERPOOL_ID']
+app_client_id = os.environ['APP_CLIENT_ID']
+keys_url = 'https://cognito-idp.{}.amazonaws.com/{}/.well-known/jwks.json'.format(region, userpool_id)
+# instead of re-downloading the public keys every time
+# we download them only on cold start
+# https://aws.amazon.com/blogs/compute/container-reuse-in-lambda/
+with urllib.request.urlopen(keys_url) as f:
+    response = f.read()
+keys = json.loads(response.decode('utf-8'))['keys']
+
+# -----------------------------------------------------------------------------
+# logging functions
+# -----------------------------------------------------------------------------
 
 def message(index, *args):
     index_string = str(index)
@@ -126,206 +150,86 @@ def get_exception():
 # Helper functions
 # -----------------------------------------------------------------------------
 
+def verify_token(token):
+    # get the kid from the headers prior to verification
+    headers = jwt.get_unverified_headers(token)
+    kid = headers['kid']
+    # search for the kid in the downloaded public keys
+    key_index = -1
+    for i in range(len(keys)):
+        if kid == keys[i]['kid']:
+            key_index = i
+            break
+    if key_index == -1:
+        logger.info(message_warning(100, "Public key not found in jwks.json"))
+        return False
+    # construct the public key
+    public_key = jwk.construct(keys[key_index])
+    # get the last two sections of the token,
+    # message and signature (encoded in base64)
+    message, encoded_signature = str(token).rsplit('.', 1)
+    # decode the signature
+    decoded_signature = base64url_decode(encoded_signature.encode('utf-8'))
+    # verify the signature
+    if not public_key.verify(message.encode("utf8"), decoded_signature):
+        logger.info(message_warning(104, "Signature verification failed"))
+        return False
+    logger.info(message_info(104, "Signature successfully verified"))
+    # since we passed the verification, we can now safely
+    # use the unverified claims
+    claims = jwt.get_unverified_claims(token)
+    # additionally we can verify the token expiration
+    if time.time() > claims['exp']:
+        logger.info(message_warning(104, "Token is expired"))
+        return False
+    # and the Audience  (use claims['client_id'] if verifying an access token)
+    if claims['client_id'] != app_client_id:
+        logger.info(message_warning(104, "Token was not issued for this audience"))
+        return False
+    # now we can use the claims
+    return claims
 
-def get_new_key(key_size=1024):
-    """ Create an "empty" key of requested length. """
-
-    result = crypto.PKey()
-    result.generate_key(crypto.TYPE_RSA, key_size)
-    return result
-
-
-def get_certificate_authority_certificate(public_key, subject_dict):
-    """ Create a self-signed Certificate Authority (CA) certificate. """
-
-    # Create certificate.
-
-    result = crypto.X509()
-    result.set_version(2)
-    result.set_serial_number(random.randrange(100000))
-
-    # Set subject.
-
-    subject = result.get_subject()
-    subject.C = subject_dict.get('C')
-    subject.CN = subject_dict.get('CNca')
-    subject.L = subject_dict.get('L')
-    subject.O = subject_dict.get('O')
-    subject.OU = subject_dict.get('OU')
-    subject.ST = subject_dict.get('ST')
-
-    # Add extensions.
-
-    result.add_extensions([
-        crypto.X509Extension(
-            b"subjectKeyIdentifier",
-            False,
-            b"hash",
-            subject=result),
-    ])
-    result.add_extensions([
-        crypto.X509Extension(
-            b"authorityKeyIdentifier",
-            False,
-            b"keyid:always",
-            issuer=result),
-    ])
-    result.add_extensions([
-        crypto.X509Extension(
-            b"basicConstraints",
-            False,
-            b"CA:TRUE"),
-        crypto.X509Extension(
-            b"keyUsage",
-            False,
-            b"keyCertSign, cRLSign"),
-    ])
-
-    # Set expiry.
-
-    result.gmtime_adj_notBefore(0)
-    result.gmtime_adj_notAfter(TEN_YEARS_IN_SECONDS)
-
-    # Sign and seal.
-
-    result.set_pubkey(public_key)
-    result.set_issuer(subject)
-    result.sign(public_key, 'sha256')
-
-    return result
-
-
-def get_certificate(public_key, ca_key, certificate_authority_certificate, subject_dict):
-    """ Create a self-signed X.509 certificate. """
-
-    # Create certificate.
-
-    result = crypto.X509()
-    result.set_version(2)
-    result.set_serial_number(random.randrange(100000))
-
-    # Set subject.
-
-    subject = result.get_subject()
-    subject.C = subject_dict.get('C')
-    subject.CN = subject_dict.get('CN')
-    subject.L = subject_dict.get('L')
-    subject.O = subject_dict.get('O')
-    subject.OU = subject_dict.get('OU')
-    subject.ST = subject_dict.get('ST')
-
-    # Add extensions.
-
-    result.add_extensions([
-        crypto.X509Extension(
-            b"basicConstraints",
-            False,
-            b"CA:FALSE"),
-        crypto.X509Extension(
-            b"subjectKeyIdentifier",
-            False,
-            b"hash",
-            subject=result),
-    ])
-    result.add_extensions([
-        crypto.X509Extension(
-            b"authorityKeyIdentifier",
-            False,
-            b"keyid:always",
-            issuer=certificate_authority_certificate),
-        crypto.X509Extension(
-            b"extendedKeyUsage",
-            False,
-            b"serverAuth"),
-        crypto.X509Extension(
-            b"keyUsage",
-            False,
-            b"digitalSignature"),
-    ])
-    result.add_extensions([
-        crypto.X509Extension(
-            b'subjectAltName',
-            False,
-            ','.join([
-                'DNS:*.example.com'
-                ]).encode())
-    ])
-
-    # Set expiry.
-
-    result.gmtime_adj_notBefore(0)
-    result.gmtime_adj_notAfter(NINE_YEARS_IN_SECONDS)
-
-    # Sign and seal.
-
-    result.set_pubkey(public_key)
-    result.set_issuer(certificate_authority_certificate.get_subject())
-    result.sign(ca_key, 'sha256')
-
-    return result
+def generateAuthPolicy(principalId, resource, effect):
+    authResponse = {}
+    authResponse["principalId"] = principalId
+    if effect and resource:
+        policyDocument = {}
+        policyDocument["Version"] = '2012-10-17'
+        policyDocument["Statement"] = []
+        statementOne = {}
+        statementOne["Action"] = 'execute-api:Invoke'
+        statementOne["Effect"] = effect
+        statementOne["Resource"] = resource
+        policyDocument["Statement"].append(statementOne)
+        authResponse["policyDocument"] = policyDocument
+    return authResponse
 
 # -----------------------------------------------------------------------------
 # Lambda handler
 # -----------------------------------------------------------------------------
 
 
-def handler(event, context):
+def lambda_handler(event, context):
     """ Function to be called by AWS lambda. """
 
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
-    result = cfnresponse.SUCCESS
     response = {}
 
     try:
         logger.info(message_info(101, json.dumps(event)))
-
-        if event.get('RequestType') in ['Create', 'Update']:
-
-            # Get input parameters.
-
-            properties = event.get('ResourceProperties', {})
-            certificate_authority_key_size = int(properties.get('CertificateAuthorityKeySize', 1024))
-            certificate_key_size = int(properties.get('CertificateKeySize', 1024))
-
-            # Mock up a subject, using input parameters if supplied.
-
-            subject = {
-                "C": properties.get('SubjectCountryName', 'US'),
-                "CN": properties.get('SubjectCommonName', 'CommonName'),
-                "CNca": properties.get('SubjectCommonNameCA', 'Self CA'),
-                "L": properties.get('SubjectLocality', 'City'),
-                "O": properties.get('SubjectOrganization', 'Organization'),
-                "OU": properties.get('SubjectOrganizationalUnit', 'OrganizationalUnit'),
-                "ST": properties.get('SubjectState', 'State'),
-            }
-
-            # Create mock Certificate Authority certificate.
-
-            certificate_authority_certificate_key = get_new_key(certificate_authority_key_size)
-            certificate_authority_certificate = get_certificate_authority_certificate(certificate_authority_certificate_key, subject)
-
-            # Create mock X.509 certificate.
-
-            certificate_key = get_new_key(certificate_key_size)
-            certificate = get_certificate(certificate_key, certificate_authority_certificate_key, certificate_authority_certificate, subject)
-
-            # Craft the response.
-
-            response['CertificateBody'] = crypto.dump_certificate(crypto.FILETYPE_PEM, certificate).decode('utf-8')
-            response['PrivateKey'] = crypto.dump_privatekey(crypto.FILETYPE_PEM, certificate_key).decode('utf-8')
-
-        logger.info(message_info(103, json.dumps(response)))
+        headers = event['headers']
+        principalId = "user"
+        if verify_token(headers["token"]):
+            logger.info(message_info(104, "policy is allowed"))
+            response = generateAuthPolicy(principalId, event['methodArn'], "Allow")
+        else:
+            logger.info(message_warning(104, "policy is not allowed"))
+            response = "unauthorized"
 
     except Exception as e:
         logger.error(message_error(997, e))
         traceback.print_exc()
-        result = cfnresponse.FAILED
     finally:
-        cfnresponse.send(event, context, result, response)
-
-    return response
+        return response
 
 # -----------------------------------------------------------------------------
 # Main
@@ -343,4 +247,4 @@ if __name__ == "__main__":
 
     # Note: This will error because of cfnresponse.send() not having a context "log_stream_name".
 
-    handler(event, context)
+    lambda_handler(event, context)

@@ -15,11 +15,9 @@ USER root
 
 # Install packages via PIP.
 
-RUN pip3 install \
-      awslambdaric \
-      cffi \
-      cfnresponse \
-      pyOpenSSL
+COPY requirements.txt ./
+RUN pip3 install awslambdaric \
+  & pip3 install -r requirements.txt
 
 # Copy files from repository.
 
