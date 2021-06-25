@@ -15,7 +15,7 @@ AWS Cloudformation.
 1. [Preamble](#preamble)
     1. [Legend](#legend)
 1. [Related artifacts](#related-artifacts)
-1. [Archictecture](#architecture)
+1. [Architecture](#architecture)
     1. [How to add Cognito Authorizer to a Websocket API gateway](#how-to-add-cognito-authorizer-to-a-websocket-api-gateway)
 1. [Demonstrate using Command Line Interface](#demonstrate-using-command-line-interface)
     1. [Prerequisites for CLI](#prerequisites-for-cli)
@@ -58,23 +58,35 @@ describing where we can improve.   Now on with the show...
 
 1. [https://github.com/Senzing/aws-cloudformation-ecs-poc-simple](https://github.com/Senzing/aws-cloudformation-ecs-poc-simple) AWS Cloudformation
 
-## Archictecture
+## Architecture
 
-The following is an architecture showcasing how the websocket API gateway interacts with the aws lambda cognito authorizer
+The following is an architecture showcasing how the websocket API gateway interacts with the aws lambda cognito authorizer.
 
-![Archictecture diagram](assets/architecture.png)
+![Architecture diagram](assets/architecture.png)
 
 ### How to add Cognito Authorizer to a Websocket API gateway
 
-Firstly, create a new authorizer and set the Name, Lambda Function and Identity Sources. Set the Lambda Function to the cognito authorizer Lambda Function and Identity Sources to token
+1. Visit the [AWS Console for API Gateway](https://console.aws.amazon.com/apigateway/main).
+2. On the left hand navigation bar, choose the APIs tab.
+3. Click on a Websocket API Gateway that you want to attach a Cognito Authorizer.
+4. On the bottom left hand navigation bar, choose the Authorizers tab.
+5. Click on the "Create New Authorizer" button.
+6. In the "Create Authorizer" pane:
+    1. Set the Authorizer name.
+    1. Set the Lambda Function to the Cognito Authorizer.
+    1. Set Identity Sources to the request parameters used for authorization. In the example below, we used the request parameter token.
+7. Once done, click on the "create" button.
 
 ![Create Authorizer](assets/create_authorizer.png)
 
-Then in the "routes" tab, click on the $connect route and then on "route request". As seen in the example below, change the authorization to the cognito authorizer lambda function.
+8. On the bottom left hand navigation bar, choose the Routes tab.
+9. In the Routes pane, choose the $connect route.
+10. In the $connect pane, click on Route Request.
+11. Change the authorization to the cognito authorizer lambda function.
 
 ![Set route request setting](assets/route_request_setting.png)
 
-The result should look like this and you are good to go.
+12. Click on Route Overview and if it looks like the example below, you have successfully added the cognito authorizer to your Websocket API gateway.
 
 ![Add authorizer to route request](assets/add_authorizer_route_request.png)
 
