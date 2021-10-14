@@ -18,7 +18,7 @@ USER root
 COPY requirements.txt ./
 RUN pip3 install awslambdaric \
  && pip3 install -r requirements.txt \
- && rm /requirements.txt
+ && rm requirements.txt
  
 # Copy files from repository.
 
