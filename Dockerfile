@@ -1,7 +1,7 @@
-ARG BASE_IMAGE=public.ecr.aws/lambda/python:3.8
+ARG BASE_IMAGE=senzing/senzing-base:1.6.3
 FROM ${BASE_IMAGE}
 
-ENV REFRESHED_AT=2021-03-09
+ENV REFRESHED_AT=2021-12-07
 
 LABEL Name="senzing/cognito-authorizer" \
       Maintainer="support@senzing.com" \
