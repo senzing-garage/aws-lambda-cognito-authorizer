@@ -229,7 +229,7 @@ logging into AWS Elastic Container Registry (ECR) is required.
     ```console
     sudo docker build \
       --tag senzing/template \
-      https://github.com/senzing/aws-lambda-cognito-authorizer.git
+      https://github.com/senzing/aws-lambda-cognito-authorizer.git#main
     ```
 
 1. **Option #2:** Using `docker` command and local repository.
