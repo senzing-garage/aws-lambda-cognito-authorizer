@@ -23,7 +23,7 @@ __version__ = "1.0.0"  # See https://www.python.org/dev/peps/pep-0396/
 __date__ = '2021-06-15'
 __updated__ = '2021-06-15'
 
-SENZING_PRODUCT_ID = "5022"  # See https://github.com/Senzing/knowledge-base/blob/master/lists/senzing-product-ids.md
+SENZING_PRODUCT_ID = "5022"  # See https://github.com/Senzing/knowledge-base/blob/main/lists/senzing-product-ids.md
 
 ONE_YEAR_IN_SECONDS = 365 * 24 * 60 * 60
 NINE_YEARS_IN_SECONDS = 9 * ONE_YEAR_IN_SECONDS
