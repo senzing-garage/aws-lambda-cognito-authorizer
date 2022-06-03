@@ -1,0 +1,24 @@
+[pylint]
+disable=
+    broad-except,
+    consider-using-enumerate,
+    consider-using-f-string,
+    import-error,
+    invalid-name,
+    line-too-long,
+    lost-exception,
+    missing-function-docstring,
+    missing-module-docstring,
+    redefined-outer-name,
+    too-many-branches,
+    too-many-locals,
+    undefined-variable,
+    unused-argument,
+    unused-import,
+    unused-variable,
+good-names=
+    template-python
+ignore=
+    __init__.py,
+notes=
+    FIXME,
