@@ -67,26 +67,26 @@ The following is an architecture showcasing how the websocket API gateway intera
 ### How to add Cognito Authorizer to a Websocket API gateway
 
 1. Visit the [AWS Console for API Gateway](https://console.aws.amazon.com/apigateway/main).
-2. On the left hand navigation bar, choose the APIs tab.
-3. Click on a Websocket API Gateway that you want to attach a Cognito Authorizer.
-4. On the bottom left hand navigation bar, choose the Authorizers tab.
-5. Click on the "Create New Authorizer" button.
-6. In the "Create Authorizer" pane:
+1. On the left hand navigation bar, choose the APIs tab.
+1. Click on a Websocket API Gateway that you want to attach a Cognito Authorizer.
+1. On the bottom left hand navigation bar, choose the Authorizers tab.
+1. Click on the "Create New Authorizer" button.
+1. In the "Create Authorizer" pane:
     1. Set the Authorizer name.
     1. Set the Lambda Function to the Cognito Authorizer.
     1. Set Identity Sources to the request parameters used for authorization. In the example below, we used the request parameter token.
-7. Once done, click on the "create" button.
+1. Once done, click on the "create" button.
 
 ![Create Authorizer](assets/create_authorizer.png)
 
-8. On the bottom left hand navigation bar, choose the Routes tab.
-9. In the Routes pane, choose the $connect route.
-10. In the $connect pane, click on Route Request.
-11. Change the authorization to the cognito authorizer lambda function.
+1. On the bottom left hand navigation bar, choose the Routes tab.
+1. In the Routes pane, choose the $connect route.
+1. In the $connect pane, click on Route Request.
+1. Change the authorization to the cognito authorizer lambda function.
 
 ![Set route request setting](assets/route_request_setting.png)
 
-12. Click on Route Overview and if it looks like the example below, you have successfully added the cognito authorizer to your Websocket API gateway.
+1. Click on Route Overview and if it looks like the example below, you have successfully added the cognito authorizer to your Websocket API gateway.
 
 ![Add authorizer to route request](assets/add_authorizer_route_request.png)
 
@@ -348,4 +348,3 @@ If not the python packages may not be the correct version.
 
 1. [PyPi - awslambdaric](https://pypi.org/project/awslambdaric/)
 1. [Creating a function with runtime dependencies](https://docs.aws.amazon.com/lambda/latest/dg/python-package-create.html#python-package-create-with-dependency)
-
