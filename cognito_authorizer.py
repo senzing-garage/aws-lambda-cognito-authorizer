@@ -19,9 +19,9 @@ from jose import jwk, jwt
 from jose.utils import base64url_decode
 
 __all__ = []
-__version__ = "1.0.0"  # See https://www.python.org/dev/peps/pep-0396/
+__version__ = "0.1.0"  # See https://www.python.org/dev/peps/pep-0396/
 __date__ = '2021-06-15'
-__updated__ = '2021-06-15'
+__updated__ = '2022-09-29'
 
 SENZING_PRODUCT_ID = "5022"  # See https://github.com/Senzing/knowledge-base/blob/main/lists/senzing-product-ids.md
 
