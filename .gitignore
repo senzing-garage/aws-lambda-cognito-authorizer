@@ -130,4 +130,5 @@ dmypy.json
 
 package/
 cognito-authorizer.zip
+.history
 
