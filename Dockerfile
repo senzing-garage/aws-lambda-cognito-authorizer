@@ -1,7 +1,7 @@
-ARG BASE_IMAGE=public.ecr.aws/lambda/python:3.8@sha256:75048caf626bb81ef6e85bf72c2cde565b61f7095479f633e984107ccf9d595e
+ARG BASE_IMAGE=public.ecr.aws/lambda/python:3.8@sha256:a04abc05330a09c239c3e3d62408dd8331c5b3e3ee323a3d8a29cb0fad4d5356
 FROM ${BASE_IMAGE}
 
-ENV REFRESHED_AT=2023-05-09
+ENV REFRESHED_AT=2023-06-15
 
 LABEL Name="senzing/cognito-authorizer" \
       Maintainer="support@senzing.com" \
