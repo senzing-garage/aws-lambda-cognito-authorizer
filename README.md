@@ -1,5 +1,17 @@
 # aws-lambda-cognito-authorizer
 
+If you are beginning your journey with
+[Senzing](https://senzing.com/),
+please start with
+[Senzing Quick Start guides](https://docs.senzing.com/quickstart/).
+
+You are in the
+[Senzing Garage](https://github.com/senzing-garage)
+where projects are "tinkered" on.
+Although this GitHub repository may help you understand an approach to using Senzing,
+it's not considered to be "production ready" and is not considered to be part of the Senzing product.
+Heck, it may not even be appropriate for your application of Senzing!
+
 ## Synopsis
 
 An AWS Lambda Python program for checking a token for authentication.
@@ -7,7 +19,7 @@ An AWS Lambda Python program for checking a token for authentication.
 ## Overview
 
 The instructions show how to generate a package that is loaded onto AWS S3 and used by
-[https://github.com/Senzing/aws-cloudformation-ecs-poc-simple](https://github.com/Senzing/aws-cloudformation-ecs-poc-simple)
+[https://github.com/senzing-garage/aws-cloudformation-ecs-poc-simple](https://github.com/senzing-garage/aws-cloudformation-ecs-poc-simple)
 AWS Cloudformation.
 
 ### Contents
@@ -38,12 +50,12 @@ AWS Cloudformation.
 
 At [Senzing](http://senzing.com),
 we strive to create GitHub documentation in a
-"[don't make me think](https://github.com/Senzing/knowledge-base/blob/main/WHATIS/dont-make-me-think.md)" style.
+"[don't make me think](https://github.com/senzing-garage/knowledge-base/blob/main/WHATIS/dont-make-me-think.md)" style.
 For the most part, instructions are copy and paste.
 Whenever thinking is needed, it's marked with a "thinking" icon :thinking:.
 Whenever customization is needed, it's marked with a "pencil" icon :pencil2:.
 If the instructions are not clear, please let us know by opening a new
-[Documentation issue](https://github.com/Senzing/template-python/issues/new?template=documentation_request.md)
+[Documentation issue](https://github.com/senzing-garage/template-python/issues/new?template=documentation_request.md)
 describing where we can improve.   Now on with the show...
 
 ### Legend
@@ -56,7 +68,7 @@ describing where we can improve.   Now on with the show...
 
 ## Related artifacts
 
-1. [https://github.com/Senzing/aws-cloudformation-ecs-poc-simple](https://github.com/Senzing/aws-cloudformation-ecs-poc-simple) AWS Cloudformation
+1. [https://github.com/senzing-garage/aws-cloudformation-ecs-poc-simple](https://github.com/senzing-garage/aws-cloudformation-ecs-poc-simple) AWS Cloudformation
 
 ## Architecture
 
@@ -99,7 +111,7 @@ These are "one-time tasks" which may already have been completed.
 
 1. Install Python dependencies:
     1. See [requirements.txt](requirements.txt) for list
-        1. [Installation hints](https://github.com/Senzing/knowledge-base/blob/main/HOWTO/install-python-dependencies.md)
+        1. [Installation hints](https://github.com/senzing-garage/knowledge-base/blob/main/HOWTO/install-python-dependencies.md)
 
 ### Download
 
@@ -150,7 +162,7 @@ These are "one-time tasks" which may already have been completed.
 These are "one-time tasks" which may already have been completed.
 
 1. The following software programs need to be installed:
-    1. [docker](https://github.com/Senzing/knowledge-base/blob/main/WHATIS/docker.md)
+    1. [docker](https://github.com/senzing-garage/knowledge-base/blob/main/WHATIS/docker.md)
 
 ### Run Docker container
 
@@ -178,14 +190,14 @@ The following instructions are used when modifying and building the Docker image
 These are "one-time tasks" which may already have been completed.
 
 1. The following software programs need to be installed:
-    1. [git](https://github.com/Senzing/knowledge-base/blob/main/WHATIS/git.md)
-    1. [make](https://github.com/Senzing/knowledge-base/blob/main/WHATIS/make.md)
-    1. [docker](https://github.com/Senzing/knowledge-base/blob/main/WHATIS/docker.md)
+    1. [git](https://github.com/senzing-garage/knowledge-base/blob/main/WHATIS/git.md)
+    1. [make](https://github.com/senzing-garage/knowledge-base/blob/main/WHATIS/make.md)
+    1. [docker](https://github.com/senzing-garage/knowledge-base/blob/main/WHATIS/docker.md)
 
 ### Clone repository
 
 For more information on environment variables,
-see [Environment Variables](https://github.com/Senzing/knowledge-base/blob/main/lists/environment-variables.md).
+see [Environment Variables](https://github.com/senzing-garage/knowledge-base/blob/main/lists/environment-variables.md).
 
 1. Set these environment variable values:
 
@@ -196,7 +208,7 @@ see [Environment Variables](https://github.com/Senzing/knowledge-base/blob/main/
     export GIT_REPOSITORY_DIR="${GIT_ACCOUNT_DIR}/${GIT_REPOSITORY}"
     ```
 
-1. Using the environment variables values just set, follow steps in [clone-repository](https://github.com/Senzing/knowledge-base/blob/main/HOWTO/clone-repository.md) to install the Git repository.
+1. Using the environment variables values just set, follow steps in [clone-repository](https://github.com/senzing-garage/knowledge-base/blob/main/HOWTO/clone-repository.md) to install the Git repository.
 
 ### Build Docker image
 
@@ -229,7 +241,7 @@ logging into AWS Elastic Container Registry (ECR) is required.
     ```console
     sudo docker build \
       --tag senzing/template \
-      https://github.com/senzing/aws-lambda-cognito-authorizer.git#main
+      https://github.com/senzing-garage/aws-lambda-cognito-authorizer.git#main
     ```
 
 1. **Option #2:** Using `docker` command and local repository.
