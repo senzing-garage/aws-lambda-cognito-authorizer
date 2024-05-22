@@ -4,8 +4,8 @@ FROM ${BASE_IMAGE}
 ENV REFRESHED_AT=2024-05-22
 
 LABEL Name="senzing/cognito-authorizer" \
-      Maintainer="support@senzing.com" \
-      Version="0.1.0"
+  Maintainer="support@senzing.com" \
+  Version="0.1.1"
 
 HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
@@ -17,8 +17,8 @@ USER root
 
 COPY requirements.txt ./
 RUN pip3 install awslambdaric \
- && pip3 install -r requirements.txt \
- && rm requirements.txt
+  && pip3 install -r requirements.txt \
+  && rm requirements.txt
 
 # Copy files from repository.
 
