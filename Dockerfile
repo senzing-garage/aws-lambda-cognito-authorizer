@@ -1,11 +1,11 @@
-ARG BASE_IMAGE=public.ecr.aws/lambda/python:3.8@sha256:26fed6a2af5b0adbf5883af82f0089cebbf04e5bbadf734c6e8c45a7ec755daf
+ARG BASE_IMAGE=public.ecr.aws/lambda/python:3.8@sha256:b0c0e28eda3ee06bba06c24aad52d5dd1307720c20df86ca9a8d381496fa8300
 FROM ${BASE_IMAGE}
 
-ENV REFRESHED_AT=2024-05-22
+ENV REFRESHED_AT=2024-06-24
 
 LABEL Name="senzing/cognito-authorizer" \
   Maintainer="support@senzing.com" \
-  Version="0.1.1"
+  Version="0.1.2"
 
 HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
