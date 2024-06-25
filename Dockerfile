@@ -5,7 +5,7 @@ ENV REFRESHED_AT=2024-06-24
 
 LABEL Name="senzing/cognito-authorizer" \
   Maintainer="support@senzing.com" \
-  Version="0.1.1"
+  Version="0.1.2"
 
 HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
