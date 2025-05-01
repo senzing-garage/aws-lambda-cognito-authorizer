@@ -130,5 +130,9 @@ dmypy.json
 
 package/
 cognito-authorizer.zip
-.history
 
+# Visual Studio code
+.vscode/*
+!.vscode/cspell.json
+*.code-workspace
+.history
