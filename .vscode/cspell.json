@@ -21,9 +21,9 @@
       "Senzing",
       "senzingapi",
       "shellcheck",
-      "stackoverflow"
+      "stackoverflow",
       "toplevel",
-      "USERPOOL",
+      "USERPOOL"
     ],
   "ignorePaths": [
     ".git/**",
