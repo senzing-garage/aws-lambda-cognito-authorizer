@@ -1,4 +1,4 @@
 cffi
 cfnresponse==1.1.5
-pyOpenSSL==25.1.0
+pyOpenSSL==25.2.0
 python-jose
