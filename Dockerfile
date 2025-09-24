@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=public.ecr.aws/lambda/python:3.8@sha256:b0c0e28eda3ee06bba06c24aad52d5dd1307720c20df86ca9a8d381496fa8300
+ARG BASE_IMAGE=public.ecr.aws/lambda/python:3.8@sha256:bb3102c119726c2dc5a08ddf773f1e75499555e07f56a831ab2e3a097f6ef46d
 FROM ${BASE_IMAGE}
 
 ENV REFRESHED_AT=2024-06-24
