@@ -11,7 +11,10 @@ permissions:
 
 jobs:
   docker-build-container:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
+
     steps:
       - name: build docker image
         uses: senzing-factory/github-action-docker-buildx-build@v2
