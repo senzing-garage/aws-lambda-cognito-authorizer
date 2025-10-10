@@ -1,5 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "enabledManagers": ["dockerfile", "docker-compose"],
-  "extends": ["config:recommended", ":disableDependencyDashboard", "docker:pinDigests"]
+  "extends": [
+    "config:recommended",
+    ":disableDependencyDashboard",
+    "docker:pinDigests"
+  ],
+  "schedule": ["* * * * 0"]
 }
