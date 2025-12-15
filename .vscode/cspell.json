@@ -2,29 +2,28 @@
   "version": "0.2",
   "language": "en",
   "words": [
-    "CCLA",
-    "CODEOWNER",
-    "DOCKERHUB",
-    "ICLA",
-    "Senzing",
-    "USERPOOL",
     "alnum",
     "analysing",
     "awslambdaric",
     "buildx",
+    "CCLA",
     "cffi",
     "cfnresponse",
+    "CODEOWNER",
+    "cooldown",
+    "dockerfiles",
+    "DOCKERHUB",
     "esbenp",
+    "ICLA",
     "pydev",
     "pylint",
     "rootfs",
+    "Senzing",
     "senzingapi",
     "shellcheck",
     "stackoverflow",
-    "toplevel"
+    "toplevel",
+    "USERPOOL"
   ],
-  "ignorePaths": [
-    ".git/**",
-    ".gitignore"
-  ]
+  "ignorePaths": [".git/**", ".gitignore"]
 }
