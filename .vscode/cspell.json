@@ -13,8 +13,10 @@
     "cooldown",
     "dockerfiles",
     "DOCKERHUB",
+    "docktermj",
     "esbenp",
     "ICLA",
+    "kernelsam",
     "pydev",
     "pylint",
     "rootfs",
@@ -25,5 +27,8 @@
     "toplevel",
     "USERPOOL"
   ],
-  "ignorePaths": [".git/**", ".gitignore"]
+  "ignorePaths": [
+    ".git/**",
+    ".gitignore"
+  ]
 }
