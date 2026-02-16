@@ -27,8 +27,5 @@
     "toplevel",
     "USERPOOL"
   ],
-  "ignorePaths": [
-    ".git/**",
-    ".gitignore"
-  ]
+  "ignorePaths": [".git/**", ".gitignore"]
 }
